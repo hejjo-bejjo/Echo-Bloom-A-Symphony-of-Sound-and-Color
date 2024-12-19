@@ -1,0 +1,1002 @@
+#include <iostream>
+#include <string>
+#include <vector>
+
+// Forward declaration (needed because Note is used in Character)
+struct Note;
+
+struct Character {
+    std::string name;
+    int health;
+    int maxHealth;
+    int movementSpeed;
+    std::vector<Note> inventory; // Notes the character has collected
+    int x; // X position in the world
+    int y; // Y position in the world
+
+    // Constructor
+    Character(std::string n, int maxHP, int speed, int startX, int startY) :
+        name(n), health(maxHP), maxHealth(maxHP), movementSpeed(speed), x(startX), y(startY) {}
+
+    void move(int dx, int dy) {
+        x += dx * movementSpeed;
+        y += dy * movementSpeed;
+        std::cout << name << " moved to (" << x << ", " << y << ")" << std::endl;
+    }
+
+    void takeDamage(int damage) {
+        health -= damage;
+        if (health <= 0) {
+            health = 0;
+            std::cout << name << " has been defeated!" << std::endl;
+        } else {
+            std::cout << name << " took " << damage << " damage. Health: " << health << "/" << maxHealth << std::endl;
+        }
+    }
+
+    void heal(int amount) {
+        health += amount;
+        if (health > maxHealth) {
+            health = maxHealth;
+        }
+        std::cout << name << " healed for " << amount << ". Health: " << health << "/" << maxHealth << std::endl;
+    }
+
+    void collectNote(const Note& note) {
+        inventory.push_back(note);
+        std::cout << name << " collected a note!" << std::endl;
+    }
+
+    void showInventory(){
+        std::cout << name << "'s inventory: ";
+        if(inventory.empty()){
+            std::cout << "empty" << std::endl;
+        } else {
+            for(const auto& note : inventory){
+                std::cout << note.pitch << " "; // Or display other note info
+            }
+            std::cout << std::endl;
+        }
+    }
+};
+
+struct Note {
+    int pitch;      // Frequency of the note
+    int duration;   // How long the note plays
+    int colorIndex; // Index to a color palette
+};
+
+int main() {
+    Character player("Elora", 100, 2, 0, 0); // Example player
+
+    player.move(1, 0); // Move right
+    player.takeDamage(20);
+    player.heal(10);
+    player.move(0, -1); // Move up
+    player.takeDamage(85);
+    player.collectNote({60, 500, 2});
+    player.showInventory();
+
+    return 0;
+}
+#include <iostream>
+#include <vector>
+#include <random>
+
+// Placeholder for graphics/sound libraries (SFML, SDL, etc.)
+// In a real game, you would include these and use them for rendering and audio.
+
+// Represents a musical note
+struct Note {
+    int pitch;      // Frequency of the note
+    int duration;   // How long the note plays
+    int colorIndex; // Index to a color palette
+};
+
+// Represents a region in the game world
+struct Region {
+    std::string name;
+    std::vector<Note> ambientMusic; // Background music for the region
+    // ... other region data (puzzles, environment details, etc.)
+};
+
+// Function to "play" a note (placeholder - would use a sound library in real game)
+void playNote(const Note& note) {
+    std::cout << "Playing note: Pitch=" << note.pitch << ", Duration=" << note.duration
+              << ", Color=" << note.colorIndex << std::endl;
+    // In a real game, this would play a sound and trigger visual effects.
+}
+
+// Function to "display" the world (placeholder - would use a graphics library)
+void displayWorld(const Region& region) {
+    std::cout << "Exploring region: " << region.name << std::endl;
+    std::cout << "Ambient music: ";
+    for (const auto& note : region.ambientMusic) {
+        std::cout << note.pitch << " ";
+    }
+    std::cout << std::endl;
+    // In a real game, this would render the environment.
+}
+
+int main() {
+    // Example: Creating a region
+    Region startingArea;
+    startingArea.name = "The Whispering Woods";
+
+    // Generate some random ambient music (placeholder)
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(40, 80); // Example pitch range
+
+    for (int i = 0; i < 5; ++i) {
+        Note n;
+        n.pitch = distrib(gen);
+        n.duration = 200; // Example duration
+        n.colorIndex = i % 4; // Example color index
+        startingArea.ambientMusic.push_back(n);
+    }
+
+    // Game loop (very simplified)
+    displayWorld(startingArea);
+
+    std::cout << "\nPlayer creates a melody note:\n";
+    Note playerNote;
+    playerNote.pitch = 60;
+    playerNote.duration = 500;
+    playerNote.colorIndex = 2;
+    playNote(playerNote);
+
+    std::cout << "\nPlayer uses a color note:\n";
+    Note colorNote;
+    colorNote.pitch = 0; // Color notes don't have a pitch
+    colorNote.duration = 100;
+    colorNote.colorIndex = 3;
+    playNote(colorNote);
+
+    std::cout << "\nGame Over (placeholder)\n";
+
+    return 0;
+}
+#include <iostream>
+#include <conio.h> // For _getch() (Windows-specific)
+#include <limits> // Required for numeric_limits
+
+// ... (Character and Note structs from previous example)
+
+void handleInput(Character& player) {
+    if (_kbhit()) { // Check if a key has been pressed
+        char input = _getch(); // Get the pressed key
+
+        switch (input) {
+        case 'w': // Move up
+            player.move(0, -1);
+            break;
+        case 's': // Move down
+            player.move(0, 1);
+            break;
+        case 'a': // Move left
+            player.move(-1, 0);
+            break;
+        case 'd': // Move right
+            player.move(1, 0);
+            break;
+        case 'i':
+            player.showInventory();
+            break;
+        case 'q': // Quit the game
+            std::cout << "Quitting game." << std::endl;
+            exit(0); // Exit the program
+            break;
+        default:
+            std::cout << "Invalid input." << std::endl;
+        }
+    }
+}
+
+int main() {
+    Character player("Elora", 100, 1, 0, 0);
+
+    std::cout << "Use 'w', 'a', 's', 'd' to move. 'i' to show inventory. 'q' to quit." << std::endl;
+
+    while (true) { // Main game loop
+        handleInput(player);
+        // ... other game logic (updates, rendering, etc.)
+    }
+
+    return 0;
+}
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map> // For storing skins
+
+// ... (Character and Note structs from previous examples)
+
+// Structure to represent a skin
+struct Skin {
+    std::string name;
+    std::string description;
+    std::string sprite; // Placeholder for actual graphics/textures
+    // ... other skin attributes (e.g., special effects)
+};
+
+// Function to display a skin (placeholder)
+void displaySkin(const Skin& skin) {
+    std::cout << "Skin: " << skin.name << std::endl;
+    std::cout << "Description: " << skin.description << std::endl;
+    std::cout << "Sprite: " << skin.sprite << std::endl; // Would render the sprite in a real game
+}
+
+int main() {
+    // Example skins
+    std::map<std::string, Skin> availableSkins;
+
+    availableSkins["default"] = {"Default", "The standard look.", "DefaultSprite.png"};
+    availableSkins["fire"] = {"Fire Scale", "Scales imbued with fire magic.", "FireSprite.png"};
+    availableSkins["ice"] = {"Ice Scale", "Scales imbued with ice magic.", "IceSprite.png"};
+
+    // Example character
+    Character player("Elora", 100, 1, 0, 0);
+    std::string currentSkin = "default"; // Player's current skin
+
+    // Display current skin
+    displaySkin(availableSkins[currentSkin]);
+
+    // Change skin (example)
+    std::cout << "\nChanging skin to Fire Scale...\n";
+    currentSkin = "fire";
+    displaySkin(availableSkins[currentSkin]);
+
+    // Attempt to change to a non-existent skin (error handling example)
+    std::cout << "\nAttempting to change to an invalid skin...\n";
+        if (availableSkins.count("invalid_skin")==0)
+        {
+            std::cout << "invalid skin!" << std::endl;
+        }
+        else
+        {
+            currentSkin = "invalid_skin";
+            displaySkin(availableSkins[currentSkin]);
+        }
+
+
+    return 0;
+}
+#include <iostream>
+#include <string>
+#include <random>
+#include <cmath> // For distance calculation
+
+// ... (Character and Note structs from previous examples)
+
+struct Enemy {
+    std::string name;
+    int health;
+    int maxHealth;
+    int attackDamage;
+    int x;
+    int y;
+    int detectionRange; // How close the player needs to be for the enemy to notice them
+
+    Enemy(std::string n, int maxHP, int atk, int startX, int startY, int range) :
+        name(n), health(maxHP), maxHealth(maxHP), attackDamage(atk), x(startX), y(startY), detectionRange(range) {}
+
+    void attack(Character& player) {
+        player.takeDamage(attackDamage);
+        std::cout << name << " attacks " << player.name << " for " << attackDamage << " damage!" << std::endl;
+    }
+
+    void moveTowards(const Character& player) {
+        int dx = player.x - x;
+        int dy = player.y - y;
+
+        // Simple movement towards the player (could be improved with pathfinding)
+        if (std::abs(dx) > std::abs(dy)) {
+            x += (dx > 0) ? 1 : -1;
+        } else {
+            y += (dy > 0) ? 1 : -1;
+        }
+        std::cout << name << " moved to (" << x << ", " << y << ")" << std::endl;
+    }
+
+    bool isInRange(const Character& player) const {
+        int dx = player.x - x;
+        int dy = player.y - y;
+        double distance = std::sqrt(dx * dx + dy * dy);
+        return distance <= detectionRange;
+    }
+};
+
+int main() {
+    Character player("Elora", 100, 1, 0, 0);
+    Enemy goblin("Goblin Grunt", 50, 10, 5, 5, 5); // Example enemy
+
+    std::cout << "A " << goblin.name << " appears!" << std::endl;
+
+    while (player.health > 0) {
+        if (goblin.isInRange(player)) {
+            std::cout << goblin.name << " spots " << player.name << "!" << std::endl;
+            goblin.attack(player);
+            player.move(1,0);
+        } else {
+            goblin.moveTowards(player);
+        }
+        if (player.health <= 0)
+        {
+            break;
+        }
+        
+    }
+    std::cout << "Game Over" << std::endl;
+    return 0;
+}
+#include <iostream>
+#include <string>
+#include <random>
+#include <cmath>
+#include <vector>
+
+// ... (Character, Note, and Enemy structs from previous examples)
+
+void playerAttack(Character& player, Enemy& enemy) {
+    // Basic attack (can be expanded with different attack types, animations, etc.)
+    int damage = player.attackDamage;
+
+    // Add note effects to the damage.
+    for (const auto& note : player.inventory)
+    {
+        if (note.pitch > 60)
+        {
+            damage += 5;
+        }
+        else if (note.pitch < 50)
+        {
+            damage -= 5;
+        }
+    }
+
+    enemy.takeDamage(damage);
+    std::cout << player.name << " attacks " << enemy.name << " for " << damage << " damage!" << std::endl;
+}
+
+int main() {
+    Character player("Elora", 100, 1, 0, 0);
+    player.attackDamage = 20;
+    Enemy goblin("Goblin Grunt", 50, 10, 5, 5, 5);
+
+    std::cout << "A " << goblin.name << " appears!" << std::endl;
+    player.collectNote({65, 100, 1});
+    player.collectNote({45, 100, 1});
+    while (player.health > 0 && goblin.health > 0) {
+        playerAttack(player, goblin);
+        if (goblin.health > 0)
+        {
+            if (goblin.isInRange(player)) {
+                std::cout << goblin.name << " spots " << player.name << "!" << std::endl;
+                goblin.attack(player);
+                player.move(1,0);
+            } else {
+                goblin.moveTowards(player);
+            }
+        }
+    }
+    if (player.health <= 0)
+    {
+        std::cout << player.name << " has been defeated!" << std::endl;
+    }
+    else
+    {
+        std::cout << goblin.name << " has been defeated!" << std::endl;
+    }
+    std::cout << "Game Over" << std::endl;
+    return 0;
+}
+#include <iostream>
+#include <vector>
+#include <string>
+
+// Simplified representation of a tile
+struct Tile {
+    char symbol; // Character to represent the tile visually
+    bool isWalkable; // Whether the player can walk on this tile
+    std::string description; // Description of the tile
+};
+
+// Function to create a simple level (can be expanded for more complex levels)
+std::vector<std::vector<Tile>> createLevel(int width, int height) {
+    std::vector<std::vector<Tile>> level(height, std::vector<Tile>(width));
+
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            if (x == 0 || x == width - 1 || y == 0 || y == height - 1) {
+                level[y][x] = {'#', false, "A sturdy wall."}; // Walls
+            } else {
+                level[y][x] = {'.', true, "Open ground."}; // Ground
+            }
+        }
+    }
+    return level;
+}
+
+// Function to display the level
+void displayLevel(const std::vector<std::vector<Tile>>& level, int playerX, int playerY) {
+    for (int y = 0; y < level.size(); ++y) {
+        for (int x = 0; x < level[y].size(); ++x) {
+            if (x == playerX && y == playerY) {
+                std::cout << '@'; // Player symbol
+            } else {
+                std::cout << level[y][x].symbol;
+            }
+        }
+        std::cout << std::endl;
+    }
+}
+
+int main() {
+    int levelWidth = 10;
+    int levelHeight = 8;
+    std::vector<std::vector<Tile>> level = createLevel(levelWidth, levelHeight);
+
+    int playerX = 1;
+    int playerY = 1;
+
+    displayLevel(level, playerX, playerY);
+
+    // Example interaction
+    std::cout << level[playerY][playerX].description << std::endl;
+
+    return 0;
+}
+#include <iostream>
+#include <vector>
+#include <cmath> // For sin/cos and other math functions
+
+// ... (Other structs and functions: Character, Enemy, Note, Tile, handleInput, etc.)
+
+// Screen dimensions (adjust these to your desired resolution)
+const int SCREEN_WIDTH = 80;
+const int SCREEN_HEIGHT = 24;
+
+// Player's field of view (in degrees)
+const double FOV = 60.0;
+
+// Function to draw a single "wall" (a vertical line)
+void drawWall(int x, int wallHeight) {
+    if (wallHeight > SCREEN_HEIGHT) wallHeight = SCREEN_HEIGHT; // Clip walls that are too tall
+
+    for (int y = 0; y < SCREEN_HEIGHT; ++y) {
+        if (y < SCREEN_HEIGHT / 2 - wallHeight / 2) {
+            std::cout << ' '; // Space above the wall
+        } else if (y < SCREEN_HEIGHT / 2 + wallHeight / 2) {
+            std::cout << '#'; // Wall character
+        } else {
+            std::cout << ' '; // Space below the wall
+        }
+    }
+}
+
+// Function to render the scene (basic raycasting)
+void render(const Character& player, const std::vector<std::vector<Tile>>& level) {
+    for (int x = 0; x < SCREEN_WIDTH; ++x) {
+        // Calculate the ray's angle
+        double rayAngle = (player.angle - FOV / 2.0) + (x / (double)SCREEN_WIDTH) * FOV;
+
+        // Raycasting algorithm (very simplified)
+        double rayX = player.x;
+        double rayY = player.y;
+        double rayDirX = std::cos(rayAngle * M_PI / 180.0); // Convert to radians
+        double rayDirY = std::sin(rayAngle * M_PI / 180.0);
+
+        int mapX = static_cast<int>(rayX);
+        int mapY = static_cast<int>(rayY);
+
+        while (mapX >= 0 && mapX < level[0].size() && mapY >= 0 && mapY < level.size() && level[mapY][mapX].symbol != '#') {
+            rayX += rayDirX * 0.1; // Increment ray position
+            rayY += rayDirY * 0.1;
+            mapX = static_cast<int>(rayX);
+            mapY = static_cast<int>(rayY);
+        }
+
+        // Calculate distance to wall
+        double distance = std::sqrt(std::pow(rayX - player.x, 2) + std::pow(rayY - player.y, 2));
+
+        // Calculate wall height based on distance (perspective)
+        int wallHeight = static_cast<int>(SCREEN_HEIGHT / distance);
+
+        drawWall(x, wallHeight);
+        std::cout << std::endl;
+    }
+}
+
+int main() {
+    // ... (Level creation, player initialization)
+    Character player("Elora", 100, 1, 1.5, 1.5);
+    player.angle = 0.0; // Initial player angle
+
+    while(true){
+        render(player, level);
+        //handleInput(player);
+    }
+    return 0;
+}
+#include <iostream>
+#include <string>
+#include <limits> // Required for numeric_limits
+#include <conio.h> // For _getch() (Windows) or termios (Unix - see previous examples)
+#include <unistd.h>
+
+// ... (Character, Enemy, Note, Tile structs and other functions)
+
+void displayStartScreen() {
+    std::cout << "****************************************" << std::endl;
+    std::cout << "*          Echo Bloom              *" << std::endl;
+    std::cout << "****************************************" << std::endl;
+    std::cout << std::endl;
+    std::cout << "1. Start Game" << std::endl;
+    std::cout << "2. Options (Not Implemented)" << std::endl;
+    std::cout << "3. Quit" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Enter your choice: ";
+}
+
+int getIntegerInput() {
+    int choice;
+    std::cin >> choice;
+    // Clear error flags and ignore remaining input in case of non-numeric input
+    if (std::cin.fail()) {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        return -1; // Indicate error
+    }
+    return choice;
+}
+
+int main() {
+    int levelWidth = 10;
+    int levelHeight = 8;
+    std::vector<std::vector<Tile>> level = createLevel(levelWidth, levelHeight);
+
+    int playerX = 1;
+    int playerY = 1;
+    Character player("Elora", 100, 1, playerX, playerY);
+    player.angle = 0.0;
+
+    while (true) {
+        displayStartScreen();
+        int choice = getIntegerInput();
+
+        switch (choice) {
+            case 1:
+                std::cout << "Starting game..." << std::endl;
+                // Main game loop (replace with your actual game logic)
+                while (player.health > 0)
+                {
+                    render(player, level);
+                    handleInput(player);
+                }
+                if (player.health <= 0)
+                {
+                    std::cout << player.name << " has been defeated!" << std::endl;
+                }
+                std::cout << "Game Over" << std::endl;
+                return 0;
+                break;
+            case 2:
+                std::cout << "Options are not yet implemented." << std::endl;
+                break;
+            case 3:
+                std::cout << "Quitting game." << std::endl;
+                return 0;
+            default:
+                std::cout << "Invalid choice. Please try again." << std::endl;
+        }
+    }
+
+    return 0;
+}
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <limits>
+#ifdef _WIN32
+#include <conio.h>
+#else
+#include <termios.h>
+#include <unistd.h>
+#endif
+
+// ... (Character, Enemy, Note, Tile structs and other functions)
+
+// ANSI color codes (for Unix-like systems and some Windows terminals)
+const std::map<int, std::string> colorCodes = {
+    {0, "\033[0m"},    // Reset
+    {1, "\033[31m"},   // Red
+    {2, "\033[32m"},   // Green
+    {3, "\033[33m"},   // Yellow
+    {4, "\033[34m"},   // Blue
+    {5, "\033[35m"},   // Magenta
+    {6, "\033[36m"},   // Cyan
+    {7, "\033[37m"},   // White
+    {8, "\033[90m"}, //Bright Black
+    {9, "\033[91m"},   // Bright Red
+    {10, "\033[92m"},   // Bright Green
+    {11, "\033[93m"},   // Bright Yellow
+    {12, "\033[94m"},   // Bright Blue
+    {13, "\033[95m"},   // Bright Magenta
+    {14, "\033[96m"},   // Bright Cyan
+    {15, "\033[97m"}    // Bright White
+};
+
+// Function to set text color (cross-platform)
+void setTextColor(int colorIndex) {
+    if (colorCodes.count(colorIndex))
+    {
+        std::cout << colorCodes.at(colorIndex);
+    }
+    else
+    {
+        std::cout << colorCodes.at(0);
+    }
+}
+
+// Enhanced displayLevel function with color
+void displayLevel(const std::vector<std::vector<Tile>>& level, int playerX, int playerY) {
+    for (int y = 0; y < level.size(); ++y) {
+        for (int x = 0; x < level[y].size(); ++x) {
+            if (x == playerX && y == playerY) {
+                setTextColor(1); // Player is red
+                std::cout << '@';
+                setTextColor(0); // Reset color
+            } else {
+                setTextColor(level[y][x].color);
+                std::cout << level[y][x].symbol;
+                setTextColor(0);
+            }
+        }
+        std::cout << std::endl;
+    }
+}
+
+//In Tile struct
+struct Tile {
+    char symbol;
+    bool isWalkable;
+    std::string description;
+    int color; //Add color to tile
+};
+
+//Example change to create level
+std::vector<std::vector<Tile>> createLevel(int width, int height) {
+    std::vector<std::vector<Tile>> level(height, std::vector<Tile>(width));
+
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            if (x == 0 || x == width - 1 || y == 0 || y == height - 1) {
+                level[y][x] = {'#', false, "A sturdy wall.", 4}; // Walls are blue
+            } else {
+                level[y][x] = {'.', true, "Open ground.", 2}; // Ground is green
+            }
+        }
+    }
+    return level;
+}
+
+int main() {
+    // ... (Other game setup)
+    int levelWidth = 10;
+    int levelHeight = 8;
+    std::vector<std::vector<Tile>> level = createLevel(levelWidth, levelHeight);
+
+    int playerX = 1;
+    int playerY = 1;
+    Character player("Elora", 100, 1, playerX, playerY);
+    player.angle = 0.0;
+
+    while (true) {
+        displayStartScreen();
+        int choice = getIntegerInput();
+
+        switch (choice) {
+            case 1:
+                std::cout << "Starting game..." << std::endl;
+                // Main game loop (replace with your actual game logic)
+                while (player.health > 0)
+                {
+                    displayLevel(level, playerX, playerY);
+                    render(player, level);
+                    handleInput(player);
+                }
+                if (player.health <= 0)
+                {
+                    std::cout << player.name << " has been defeated!" << std::endl;
+                }
+                std::cout << "Game Over" << std::endl;
+                return 0;
+                break;
+            case 2:
+                std::cout << "Options are not yet implemented." << std::endl;
+                break;
+            case 3:
+                std::cout << "Quitting game." << std::endl;
+                return 0;
+            default:
+                std::cout << "Invalid choice. Please try again." << std::endl;
+        }
+    }
+
+    return 0;
+}
+#include <iostream>
+#include <string>
+#include <random>
+#include <cmath>
+#include <vector>
+
+// ... (Character, Enemy, Note, Tile structs from previous examples)
+
+struct Weapon {
+    std::string name;
+    int damage;
+    std::string description;
+    // ... other weapon stats (range, attack speed, etc.)
+};
+
+void playerAttack(Character& player, Enemy& enemy, const Weapon& weapon) {
+    int damage = weapon.damage + player.attackDamage;
+    // Add note effects to the damage.
+    for (const auto& note : player.inventory)
+    {
+        if (note.pitch > 60)
+        {
+            damage += 5;
+        }
+        else if (note.pitch < 50)
+        {
+            damage -= 5;
+        }
+    }
+    enemy.takeDamage(damage);
+    std::cout << player.name << " attacks " << enemy.name << " with " << weapon.name << " for " << damage << " damage!" << std::endl;
+}
+
+int main() {
+    Character player("Elora", 100, 1, 0, 0);
+    player.attackDamage = 5; // base damage
+    Enemy goblin("Goblin Grunt", 50, 10, 5, 5, 5);
+
+    Weapon sword = {"Iron Sword", 15, "A basic iron sword."};
+    Weapon staff = {"Wooden Staff", 10, "A simple wooden staff."};
+
+    std::cout << "A " << goblin.name << " appears!" << std::endl;
+    player.collectNote({65, 100, 1});
+    player.collectNote({45, 100, 1});
+
+    while (player.health > 0 && goblin.health > 0) {
+        // Player chooses weapon (in a real game, this would be through input)
+        char weaponChoice;
+        std::cout << "Choose your weapon (s for sword, t for staff): ";
+        std::cin >> weaponChoice;
+        if (weaponChoice == 's')
+        {
+            playerAttack(player, goblin, sword);
+        }
+        else if (weaponChoice == 't')
+        {
+            playerAttack(player, goblin, staff);
+        }
+        else
+        {
+            std::cout << "invalid weapon choice" << std::endl;
+        }
+        if (goblin.health > 0)
+        {
+            if (goblin.isInRange(player)) {
+                std::cout << goblin.name << " spots " << player.name << "!" << std::endl;
+                goblin.attack(player);
+                player.move(1,0);
+            } else {
+                goblin.moveTowards(player);
+            }
+        }
+    }
+    if (player.health <= 0)
+    {
+        std::cout << player.name << " has been defeated!" << std::endl;
+    }
+    else
+    {
+        std::cout << goblin.name << " has been defeated!" << std::endl;
+    }
+    std::cout << "Game Over" << std::endl;
+    return 0;
+}
+#include <iostream>
+#include <string>
+#include <vector>
+#include <cmath>
+#ifdef _WIN32
+#include <conio.h>
+#else
+#include <termios.h>
+#include <unistd.h>
+#endif
+#include <chrono>
+#include <thread>
+
+// ... (Other structs and functions: Character, Enemy, Note, Tile, handleInput, render)
+
+// Function to simulate a delay (cross-platform)
+void sleep_ms(int milliseconds) {
+#ifdef _WIN32
+    Sleep(milliseconds);
+#else
+    usleep(milliseconds * 1000);
+#endif
+}
+
+void render(const Character& player, const std::vector<std::vector<Tile>>& level) {
+    // ... (Raycasting code from previous example)
+}
+
+void displayLevel(const std::vector<std::vector<Tile>>& level, int playerX, int playerY, int animationFrame) {
+    char playerSymbol;
+
+    if (animationFrame == 0)
+    {
+        playerSymbol = '@';
+    }
+    else
+    {
+        playerSymbol = '&';
+    }
+
+    for (int y = 0; y < level.size(); ++y) {
+        for (int x = 0; x < level[y].size(); ++x) {
+            if (x == playerX && y == playerY) {
+                setTextColor(1);
+                std::cout << playerSymbol;
+                setTextColor(0);
+            } else {
+                setTextColor(level[y][x].color);
+                std::cout << level[y][x].symbol;
+                setTextColor(0);
+            }
+        }
+        std::cout << std::endl;
+    }
+}
+
+int main() {
+    // ... (Other game setup)
+    int levelWidth = 10;
+    int levelHeight = 8;
+    std::vector<std::vector<Tile>> level = createLevel(levelWidth, levelHeight);
+
+    int playerX = 1;
+    int playerY = 1;
+    Character player("Elora", 100, 1, playerX, playerY);
+    player.angle = 0.0;
+    int animationFrame = 0;
+
+    while (true) {
+        displayStartScreen();
+        int choice = getIntegerInput();
+
+        switch (choice) {
+            case 1:
+                std::cout << "Starting game..." << std::endl;
+                // Main game loop (replace with your actual game logic)
+                while (player.health > 0)
+                {
+                    displayLevel(level, player.x, player.y, animationFrame);
+                    render(player, level);
+                    handleInput(player);
+                    animationFrame = (animationFrame + 1) % 2;
+                    sleep_ms(200);
+                }
+                if (player.health <= 0)
+                {
+                    std::cout << player.name << " has been defeated!" << std::endl;
+                }
+                std::cout << "Game Over" << std::endl;
+                return 0;
+                break;
+            case 2:
+                std::cout << "Options are not yet implemented." << std::endl;
+                break;
+            case 3:
+                std::cout << "Quitting game." << std::endl;
+                return 0;
+            default:
+                std::cout << "Invalid choice. Please try again." << std::endl;
+        }
+    }
+
+    return 0;
+}
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+
+// ... (Character and Note structs from previous examples)
+
+// Structure to represent a skin
+struct Skin {
+    std::string name;
+    std::string description;
+    std::vector<std::string> sprites; // Now a vector of strings for animation frames
+    int colorIndex; // Color index for the skin
+};
+
+// Function to display a skin (placeholder - now handles animation frames)
+void displaySkin(const Skin& skin, int animationFrame) {
+    std::cout << "Skin: " << skin.name << std::endl;
+    std::cout << "Description: " << skin.description << std::endl;
+    if (!skin.sprites.empty()) {
+        std::cout << "Sprite: " << skin.sprites[animationFrame % skin.sprites.size()] << std::endl;
+    } else {
+        std::cout << "No sprites available for this skin." << std::endl;
+    }
+}
+
+int main() {
+    // Example skins with animation frames
+    std::map<std::string, Skin> availableSkins;
+
+    availableSkins["default"] = {
+        "Default",
+        "The standard look.",
+        {"(@)", "(&)"}, // Two animation frames
+        1 // Red
+    };
+    availableSkins["fire"] = {
+        "Fire Scale",
+        "Scales imbued with fire magic.",
+        {"{<}", "{>}"}, // Two animation frames
+        9 // Bright Red
+    };
+    availableSkins["ice"] = {
+        "Ice Scale",
+        "Scales imbued with ice magic.",
+        {"[o]", "[.]"}, // Two animation frames
+        12 // Bright Blue
+    };
+    availableSkins["no_skin"] = {
+        "No Skin",
+        "This skin has no sprites",
+        {},
+        0
+    };
+
+    // Example character
+    Character player("Elora", 100, 1, 0, 0);
+    std::string currentSkin = "default";
+    int animationFrame = 0;
+
+    // Display current skin (with animation)
+    displaySkin(availableSkins[currentSkin], animationFrame);
+    animationFrame++;
+    displaySkin(availableSkins[currentSkin], animationFrame);
+
+    // Change skin (example)
+    std::cout << "\nChanging skin to Fire Scale...\n";
+    currentSkin = "fire";
+    displaySkin(availableSkins[currentSkin], animationFrame);
+    animationFrame++;
+    displaySkin(availableSkins[currentSkin], animationFrame);
+
+    std::cout << "\nAttempting to change to an invalid skin...\n";
+        if (availableSkins.count("invalid_skin")==0)
+        {
+            std::cout << "invalid skin!" << std::endl;
+        }
+        else
+        {
+            currentSkin = "invalid_skin";
+            displaySkin(availableSkins[currentSkin], animationFrame);
+        }
+    return 0;
+}
