@@ -1864,3 +1864,282 @@ startGameButton.addEventListener("click", ()=>{
 
 </body>
 </html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Jump and Gravity</title>
+<style>
+body { margin: 0; overflow: hidden; background-color: #333; }
+canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const player = {
+    x: 100,
+    y: canvas.height - 50, // Start on the ground
+    width: 20,
+    height: 40,
+    velocityY: 0,
+    gravity: 0.5,
+    isJumping: false,
+    jumpForce: -10 // Negative value to move upwards
+};
+
+function updatePlayer() {
+    // Gravity
+    player.velocityY += player.gravity;
+    player.y += player.velocityY;
+
+    // Ground collision
+    if (player.y + player.height > canvas.height) {
+        player.y = canvas.height - player.height;
+        player.velocityY = 0;
+        player.isJumping = false; // Reset jump state
+    }
+
+    //Jumping
+    if(keys["Space"] && !player.isJumping){
+        player.velocityY = player.jumpForce;
+        player.isJumping = true;
+    }
+
+    // Basic left/right movement
+    if(keys["ArrowLeft"]){
+        player.x -= 5;
+    }
+    if(keys["ArrowRight"]){
+        player.x += 5;
+    }
+
+    //Boundary checks
+    if(player.x < 0) player.x = 0;
+    if(player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+}
+
+function drawPlayer() {
+    ctx.fillStyle = "white";
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+}
+
+const keys = {};
+document.addEventListener("keydown", (event) => {
+    keys[event.code] = true; // Use event.code for better key detection
+});
+document.addEventListener("keyup", (event) => {
+    keys[event.code] = false;
+});
+
+
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    updatePlayer();
+    drawPlayer();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Enemies with Skins</title>
+<style>
+body { margin: 0; overflow: hidden; background-color: #333; }
+canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const enemies = [];
+const enemySprites = {
+    blob: new Image(),
+    ghost: new Image(),
+    slime: new Image()
+};
+
+enemySprites.blob.src = "blob_enemy.png"; // Replace with your image paths
+enemySprites.ghost.src = "ghost_enemy.png";
+enemySprites.slime.src = "slime_enemy.png";
+
+let imagesLoaded = 0;
+const totalImages = Object.keys(enemySprites).length;
+
+for (const sprite in enemySprites) {
+    enemySprites[sprite].onload = () => {
+        imagesLoaded++;
+        if (imagesLoaded === totalImages) {
+            startGame(); // Start after all images are loaded
+        }
+    };
+}
+
+class Enemy {
+    constructor(x, y, type) {
+        this.x = x;
+        this.y = y;
+        this.type = type; // "blob", "ghost", or "slime"
+        this.size = 32; // Standard size. Adjust as needed.
+        this.speed = Math.random() * 2 + 1;
+        this.dx = (Math.random() - 0.5) * this.speed;
+        this.dy = (Math.random() - 0.5) * this.speed;
+    }
+
+    update() {
+        this.x += this.dx;
+        this.y += this.dy;
+
+        if (this.x + this.size > canvas.width || this.x < 0) this.dx *= -1;
+        if (this.y + this.size > canvas.height || this.y < 0) this.dy *= -1;
+    }
+
+    draw() {
+        if (enemySprites[this.type]) {
+            ctx.drawImage(enemySprites[this.type], this.x, this.y, this.size, this.size);
+        } else { //Fallback if image is not loaded or type is invalid
+            ctx.fillStyle = "red";
+            ctx.fillRect(this.x, this.y, this.size, this.size); //Draw a red square as placeholder
+        }
+    }
+}
+
+let spawnInterval;
+
+function startSpawning(spawnRate) {
+    spawnInterval = setInterval(() => {
+        const x = Math.random() * (canvas.width - 32);
+        const y = Math.random() * (canvas.height - 32);
+        const enemyTypes = Object.keys(enemySprites);
+        const randomType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+        enemies.push(new Enemy(x, y, randomType));
+    }, spawnRate);
+}
+
+function stopSpawning() {
+    clearInterval(spawnInterval);
+}
+
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (const enemy of enemies) {
+        enemy.update();
+        enemy.draw();
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+function startGame(){
+    startSpawning(1000);
+    gameLoop();
+}
+
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Screen Scrolling</title>
+<style>
+body { margin: 0; overflow: hidden; background-color: #333; }
+canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const player = {
+    x: 100,
+    y: canvas.height - 50,
+    width: 20,
+    height: 40,
+    speed: 5,
+    velocityY: 0,
+    gravity: 0.5,
+    isJumping: false,
+    jumpForce: -10
+};
+
+const background = {
+    x: 0,
+    width: 2000, // Width of your background image/area
+    image: new Image()
+};
+background.image.src = "background.png"; // Replace with your background image
+
+//Load the image before starting the game
+background.image.onload = () => {
+    gameLoop();
+}
+
+function updatePlayer() {
+    // ... (Existing player update code for movement and jumping)
+    if(keys["ArrowLeft"]){
+        player.x -= player.speed;
+        if(player.x < canvas.width/4){
+            background.x += player.speed;
+        }
+    }
+    if(keys["ArrowRight"]){
+        player.x += player.speed;
+        if(player.x > canvas.width*3/4){
+            background.x -= player.speed;
+        }
+    }
+    //Keep player within bounds of the middle of the screen
+    if(player.x < canvas.width/4) player.x = canvas.width/4;
+    if(player.x > canvas.width*3/4) player.x = canvas.width*3/4;
+
+    if (background.x > 0) background.x = 0;
+    if (background.x < -background.width + canvas.width) background.x = -background.width + canvas.width;
+}
+
+function drawBackground() {
+    ctx.drawImage(background.image, background.x, 0, background.width, canvas.height);
+}
+
+function drawPlayer() {
+    ctx.fillStyle = "white";
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+}
+
+const keys = {};
+document.addEventListener("keydown", (event) => {
+    keys[event.code] = true;
+});
+document.addEventListener("keyup", (event) => {
+    keys[event.code] = false;
+});
+
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBackground();
+    updatePlayer();
+    drawPlayer();
+    requestAnimationFrame(gameLoop);
+}
+
+</script>
+</body>
+</html>
