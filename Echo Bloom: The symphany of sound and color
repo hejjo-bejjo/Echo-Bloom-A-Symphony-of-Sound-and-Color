@@ -1000,3 +1000,867 @@ int main() {
         }
     return 0;
 }
+<!DOCTYPE html>
+<html>
+<head>
+<title>Echo Bloom Gravity Example</title>
+<style>
+body { margin: 0; }
+canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = 800;
+canvas.height = 600;
+
+const objects = [];
+
+class GameObject {
+  constructor(x, y, radius, color) {
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+    this.color = color;
+    this.velocityY = 0;
+    this.gravity = 0.5; // Adjust for stronger/weaker gravity
+  }
+
+  update() {
+    this.velocityY += this.gravity;
+    this.y += this.velocityY;
+
+    // Basic floor collision
+    if (this.y + this.radius > canvas.height) {
+      this.y = canvas.height - this.radius;
+      this.velocityY = 0; // Stop falling
+    }
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
+// Create some objects
+objects.push(new GameObject(100, 50, 20, 'red'));
+objects.push(new GameObject(200, 100, 30, 'blue'));
+objects.push(new GameObject(350, 20, 15, 'green'));
+
+
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (const obj of objects) {
+    obj.update();
+    obj.draw();
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Bow and Arrow</title>
+<style>
+body { margin: 0; overflow: hidden; } /* Prevent scrollbars */
+canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const bow = {
+  x: 50,
+  y: canvas.height / 2,
+  width: 20,
+  height: 80,
+  angle: 0
+};
+
+const arrow = {
+  x: bow.x + bow.width,
+  y: bow.y,
+  width: 30,
+  height: 5,
+  velocityX: 0,
+  velocityY: 0,
+  inFlight: false
+};
+
+let mouseX = 0;
+let mouseY = 0;
+let isDrawing = false;
+
+canvas.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  if (isDrawing) {
+    updateBowAngle();
+  }
+});
+
+canvas.addEventListener('mousedown', () => {
+  isDrawing = true;
+});
+
+canvas.addEventListener('mouseup', () => {
+  isDrawing = false;
+  shootArrow();
+});
+
+function updateBowAngle() {
+    const dx = mouseX - bow.x;
+    const dy = mouseY - bow.y;
+    bow.angle = Math.atan2(dy, dx);
+}
+
+function drawBow() {
+  ctx.save();
+  ctx.translate(bow.x, bow.y);
+  ctx.rotate(bow.angle);
+
+  ctx.fillStyle = 'brown';
+  ctx.fillRect(0, -bow.height / 2, bow.width, bow.height);
+
+  ctx.strokeStyle = 'black';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0, -bow.height / 2);
+  ctx.lineTo(0, bow.height / 2);
+  ctx.stroke();
+  ctx.closePath();
+
+
+  ctx.restore();
+}
+
+function shootArrow() {
+  arrow.x = bow.x + bow.width;
+  arrow.y = bow.y;
+  arrow.velocityX = Math.cos(bow.angle) * 10; // Adjust arrow speed
+  arrow.velocityY = Math.sin(bow.angle) * 10;
+  arrow.inFlight = true;
+}
+
+function updateArrow() {
+  if (arrow.inFlight) {
+    arrow.x += arrow.velocityX;
+    arrow.y += arrow.velocityY;
+
+    // Basic screen boundary check (arrow disappears)
+    if (arrow.x > canvas.width || arrow.y < 0 || arrow.y > canvas.height) {
+      arrow.inFlight = false;
+    }
+  }
+}
+
+function drawArrow() {
+  ctx.fillStyle = 'gray';
+  ctx.fillRect(arrow.x, arrow.y - arrow.height/2, arrow.width, arrow.height);
+}
+
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBow();
+  updateArrow();
+  drawArrow();
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Bow and Arrow</title>
+<style>
+body { margin: 0; overflow: hidden; } /* Prevent scrollbars */
+canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const bow = {
+  x: 50,
+  y: canvas.height / 2,
+  width: 20,
+  height: 80,
+  angle: 0
+};
+
+const arrow = {
+  x: bow.x + bow.width,
+  y: bow.y,
+  width: 30,
+  height: 5,
+  velocityX: 0,
+  velocityY: 0,
+  inFlight: false
+};
+
+let mouseX = 0;
+let mouseY = 0;
+let isDrawing = false;
+
+canvas.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  if (isDrawing) {
+    updateBowAngle();
+  }
+});
+
+canvas.addEventListener('mousedown', () => {
+  isDrawing = true;
+});
+
+canvas.addEventListener('mouseup', () => {
+  isDrawing = false;
+  shootArrow();
+});
+
+function updateBowAngle() {
+    const dx = mouseX - bow.x;
+    const dy = mouseY - bow.y;
+    bow.angle = Math.atan2(dy, dx);
+}
+
+function drawBow() {
+  ctx.save();
+  ctx.translate(bow.x, bow.y);
+  ctx.rotate(bow.angle);
+
+  ctx.fillStyle = 'brown';
+  ctx.fillRect(0, -bow.height / 2, bow.width, bow.height);
+
+  ctx.strokeStyle = 'black';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0, -bow.height / 2);
+  ctx.lineTo(0, bow.height / 2);
+  ctx.stroke();
+  ctx.closePath();
+
+
+  ctx.restore();
+}
+
+function shootArrow() {
+  arrow.x = bow.x + bow.width;
+  arrow.y = bow.y;
+  arrow.velocityX = Math.cos(bow.angle) * 10; // Adjust arrow speed
+  arrow.velocityY = Math.sin(bow.angle) * 10;
+  arrow.inFlight = true;
+}
+
+function updateArrow() {
+  if (arrow.inFlight) {
+    arrow.x += arrow.velocityX;
+    arrow.y += arrow.velocityY;
+
+    // Basic screen boundary check (arrow disappears)
+    if (arrow.x > canvas.width || arrow.y < 0 || arrow.y > canvas.height) {
+      arrow.inFlight = false;
+    }
+  }
+}
+
+function drawArrow() {
+  ctx.fillStyle = 'gray';
+  ctx.fillRect(arrow.x, arrow.y - arrow.height/2, arrow.width, arrow.height);
+}
+
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBow();
+  updateArrow();
+  drawArrow();
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Beginning Cutscene</title>
+<style>
+body { margin: 0; overflow: hidden; background-color: black; }
+#cutscene-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-family: sans-serif;
+  font-size: 2em;
+  text-align: center;
+  opacity: 0; /* Initially hidden */
+  transition: opacity 1s ease-in-out; /* Smooth transitions */
+}
+.fade-in {
+    opacity: 1;
+}
+.hidden{
+    display: none;
+}
+</style>
+</head>
+<body>
+
+<div id="cutscene-container">
+    <div id="scene1" class="hidden">
+        <p>In a world of silence...</p>
+    </div>
+    <div id="scene2" class="hidden">
+        <p>A single sound awakens.</p>
+    </div>
+    <div id="scene3" class="hidden">
+        <p>And color begins to bloom.</p>
+    </div>
+    <button id="startGame" class="hidden">Start Game</button>
+</div>
+
+<script>
+const cutsceneContainer = document.getElementById('cutscene-container');
+const scene1 = document.getElementById('scene1');
+const scene2 = document.getElementById('scene2');
+const scene3 = document.getElementById('scene3');
+const startGameButton = document.getElementById('startGame');
+let currentScene = 1;
+
+function showScene(sceneNumber) {
+    let sceneToShow;
+    switch(sceneNumber){
+        case 1:
+            sceneToShow = scene1;
+            break;
+        case 2:
+            sceneToShow = scene2;
+            break;
+        case 3:
+            sceneToShow = scene3;
+            break;
+    }
+    if(sceneToShow){
+        sceneToShow.classList.remove("hidden");
+        setTimeout(() => {
+            sceneToShow.classList.add("fade-in");
+        }, 50);
+    }
+}
+
+function hideScene(sceneNumber){
+    let sceneToHide;
+    switch(sceneNumber){
+        case 1:
+            sceneToHide = scene1;
+            break;
+        case 2:
+            sceneToHide = scene2;
+            break;
+        case 3:
+            sceneToHide = scene3;
+            break;
+    }
+    if(sceneToHide){
+        sceneToHide.classList.remove("fade-in");
+        setTimeout(() => {
+            sceneToHide.classList.add("hidden");
+        }, 1000);
+    }
+}
+
+function nextScene(){
+    hideScene(currentScene);
+    currentScene++;
+    if(currentScene <= 3){
+        setTimeout(() => {
+            showScene(currentScene);
+        }, 1500)
+    } else {
+        startGameButton.classList.remove("hidden");
+        startGameButton.classList.add("fade-in");
+    }
+}
+
+showScene(1);
+setTimeout(() => {
+    nextScene();
+}, 3000);
+setTimeout(() => {
+    nextScene();
+}, 6000);
+setTimeout(() => {
+    nextScene();
+}, 9000);
+
+startGameButton.addEventListener('click', () => {
+    // Redirect to your game or start the game logic
+    window.location.href = "your_game.html"; // Replace with your game file
+});
+</script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Enemy Spawning</title>
+<style>
+body { margin: 0; overflow: hidden; background-color: #333; }
+canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const enemies = [];
+
+class Enemy {
+  constructor(x, y, size, speed) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.speed = speed;
+    this.dx = (Math.random() - 0.5) * this.speed; // Random horizontal direction
+    this.dy = (Math.random() - 0.5) * this.speed; // Random vertical direction
+  }
+
+  update() {
+    this.x += this.dx;
+    this.y += this.dy;
+
+    // Boundary collision (bounce)
+    if (this.x + this.size > canvas.width || this.x - this.size < 0) {
+      this.dx *= -1;
+    }
+    if (this.y + this.size > canvas.height || this.y - this.size < 0) {
+      this.dy *= -1;
+    }
+  }
+
+  draw() {
+    ctx.fillStyle = 'red';
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
+let spawnInterval;
+
+function startSpawning(spawnRate) { // spawnRate in milliseconds
+  spawnInterval = setInterval(() => {
+    const size = Math.random() * 20 + 10; // Random size between 10 and 30
+    const x = Math.random() * (canvas.width - size * 2) + size; // Spawn within canvas bounds
+    const y = Math.random() * (canvas.height - size * 2) + size;
+    const speed = Math.random() * 3 + 1; // Random speed
+    enemies.push(new Enemy(x, y, size, speed));
+  }, spawnRate);
+}
+
+function stopSpawning() {
+  clearInterval(spawnInterval);
+}
+
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < enemies.length; i++) {
+    enemies[i].update();
+    enemies[i].draw();
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+
+startSpawning(1000); // Spawn an enemy every 1000ms (1 second)
+gameLoop();
+
+// Example of stopping spawning after 10 seconds:
+setTimeout(() => {
+    stopSpawning();
+    console.log("Spawning stopped.")
+}, 10000)
+
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Multiple Weapons</title>
+<style>
+body { margin: 0; overflow: hidden; background-color: #333; }
+canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const player = {
+    x: 100,
+    y: canvas.height / 2,
+    width: 20,
+    height: 40,
+    currentWeapon: 0 // Index of the current weapon
+};
+
+const weapons = [
+    {   // Basic projectile
+        name: "Projectile",
+        color: "blue",
+        fireRate: 500, // Milliseconds between shots
+        projectileSpeed: 10,
+        projectiles: []
+    },
+    {   // Spread Shot
+        name: "Spread Shot",
+        color: "green",
+        fireRate: 1000,
+        projectileSpeed: 7,
+        projectiles: []
+    },
+    {   // Beam
+        name: "Beam",
+        color: "yellow",
+        fireRate: 200,
+        beamWidth: 5,
+        beamLength: 50,
+        isFiring: false
+    }
+];
+
+let lastFireTime = 0;
+
+canvas.addEventListener("click", () => {
+    fireWeapon();
+})
+
+function fireWeapon(){
+    const now = Date.now();
+    const currentWeapon = weapons[player.currentWeapon];
+    if (now - lastFireTime > currentWeapon.fireRate) {
+        lastFireTime = now;
+        switch(currentWeapon.name){
+            case "Projectile":
+                currentWeapon.projectiles.push({
+                    x: player.x + player.width,
+                    y: player.y + player.height / 2,
+                    vx: currentWeapon.projectileSpeed,
+                    vy: 0
+                });
+                break;
+            case "Spread Shot":
+                for(let i = -1; i <= 1; i++){
+                    currentWeapon.projectiles.push({
+                        x: player.x + player.width,
+                        y: player.y + player.height / 2,
+                        vx: currentWeapon.projectileSpeed,
+                        vy: i * 2 // Spread angle
+                    });
+                }
+                break;
+            case "Beam":
+                currentWeapon.isFiring = true;
+                setTimeout(() => {
+                    currentWeapon.isFiring = false;
+                }, 200); // Beam lasts for 200ms
+                break;
+        }
+    }
+}
+
+document.addEventListener("keydown", (event) => {
+    if (event.key == "1") {
+        player.currentWeapon = 0;
+    } else if (event.key == "2") {
+        player.currentWeapon = 1;
+    } else if (event.key == "3") {
+        player.currentWeapon = 2;
+    }
+});
+
+function updateProjectiles(weapon){
+    for (let i = weapon.projectiles.length - 1; i >= 0; i--) {
+        weapon.projectiles[i].x += weapon.projectiles[i].vx;
+        weapon.projectiles[i].y += weapon.projectiles[i].vy;
+        if (weapon.projectiles[i].x > canvas.width) {
+            weapon.projectiles.splice(i, 1); // Remove projectile if off-screen
+        }
+    }
+}
+
+function drawProjectiles(weapon){
+    ctx.fillStyle = weapon.color;
+    for(const projectile of weapon.projectiles){
+        ctx.beginPath();
+        ctx.arc(projectile.x, projectile.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.closePath();
+    }
+}
+
+function drawBeam(weapon){
+    if(weapon.isFiring){
+        ctx.fillStyle = weapon.color;
+        ctx.fillRect(player.x + player.width, player.y + player.height/2 - weapon.beamWidth/2, weapon.beamLength, weapon.beamWidth);
+    }
+}
+
+function drawPlayer() {
+    ctx.fillStyle = "white";
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+}
+
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawPlayer();
+
+    for(const weapon of weapons){
+        updateProjectiles(weapon);
+        drawProjectiles(weapon);
+        if(weapon.name == "Beam"){
+            drawBeam(weapon);
+        }
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Walking Animation</title>
+<style>
+body { margin: 0; overflow: hidden; background-color: #333; }
+canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const player = {
+    x: 100,
+    y: canvas.height / 2,
+    width: 32, // Width of each sprite frame
+    height: 48, // Height of each sprite frame
+    speed: 5,
+    frameIndex: 0,
+    tickCount: 0,
+    ticksPerFrame: 8, // Adjust for animation speed (lower = faster)
+    spriteSheet: new Image()
+};
+
+player.spriteSheet.src = "player_spritesheet.png"; // Replace with your sprite sheet image
+
+player.spriteSheet.onload = () => {
+    gameLoop(); // Start the game loop after the image is loaded
+};
+
+function updatePlayer() {
+    // Basic left/right movement (you can add more complex movement)
+    if (keys["ArrowLeft"]) {
+        player.x -= player.speed;
+    }
+    if (keys["ArrowRight"]) {
+        player.x += player.speed;
+    }
+
+    // Animation logic
+    player.tickCount++;
+
+    if (player.tickCount > player.ticksPerFrame) {
+        player.tickCount = 0;
+        // Go to the next frame
+        if (keys["ArrowLeft"] || keys["ArrowRight"]) { // Animate only when moving
+            player.frameIndex = (player.frameIndex + 1) % 4; // Assuming 4 frames
+        } else {
+            player.frameIndex = 0; // Reset to idle frame
+        }
+    }
+
+    // Boundary check
+    if (player.x < 0) player.x = 0;
+    if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+}
+
+function drawPlayer() {
+    ctx.drawImage(
+        player.spriteSheet,
+        player.frameIndex * player.width, // Source x
+        0,                             // Source y
+        player.width,                   // Source width
+        player.height,                  // Source height
+        player.x,                       // Destination x
+        player.y,                       // Destination y
+        player.width,                   // Destination width
+        player.height                    // Destination height
+    );
+}
+
+const keys = {};
+document.addEventListener("keydown", (event) => {
+    keys[event.key] = true;
+});
+document.addEventListener("keyup", (event) => {
+    keys[event.key] = false;
+});
+
+
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    updatePlayer();
+    drawPlayer();
+    requestAnimationFrame(gameLoop);
+}
+
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Character Selection</title>
+<style>
+body {
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+#character-selection {
+    display: flex;
+    gap: 20px; /* Space between characters */
+}
+
+.character {
+    cursor: pointer;
+    border: 2px solid transparent; /* Initially no border */
+    padding: 10px;
+    transition: border-color 0.3s ease;
+}
+
+.character img {
+    width: 100px;
+    height: 150px;
+    object-fit: contain; /* Prevents image distortion */
+    display: block;
+}
+
+.character.selected {
+    border-color: blue; /* Highlight selected character */
+}
+#start-game{
+    display: none;
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1.2em;
+    cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div id="character-selection">
+    <div class="character" id="boy">
+        <img src="boy_sprite.png" alt="Boy">
+        <p>Boy</p>
+    </div>
+    <div class="character" id="girl">
+        <img src="girl_sprite.png" alt="Girl">
+        <p>Girl</p>
+    </div>
+</div>
+<button id="start-game">Start Game</button>
+
+<script>
+const characters = document.querySelectorAll('.character');
+const startGameButton = document.getElementById('start-game');
+let selectedCharacter = null;
+
+characters.forEach(character => {
+    character.addEventListener('click', () => {
+        // Remove 'selected' class from all characters
+        characters.forEach(c => c.classList.remove('selected'));
+
+        // Add 'selected' class to the clicked character
+        character.classList.add('selected');
+        selectedCharacter = character.id;
+        startGameButton.style.display = "block";
+    });
+});
+
+startGameButton.addEventListener("click", ()=>{
+    if(selectedCharacter){
+        console.log("Starting Game with " + selectedCharacter);
+        localStorage.setItem("selectedCharacter", selectedCharacter);
+        window.location.href = "your_game.html";
+    } else {
+        alert("Please select a character.");
+    }
+});
+
+</script>
+
+</body>
+</html>
