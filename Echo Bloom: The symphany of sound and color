@@ -2143,3 +2143,90 @@ function gameLoop() {
 </script>
 </body>
 </html>
+using UnityEngine;
+using System.Collections.Generic;
+
+public class MusicPower : MonoBehaviour
+{
+    // Enum to represent different musical notes/frequencies
+    public enum Note { C, D, E, F, G, A, B };
+
+    // Struct to hold note information and associated color
+    [System.Serializable]
+    public struct NoteColor
+    {
+        public Note note;
+        public Color color;
+        public AudioClip sound; // Associated sound clip
+    }
+
+    public List<NoteColor> noteColors = new List<NoteColor>();
+
+    // Dictionary for quick color lookup
+    private Dictionary<Note, Color> colorMap = new Dictionary<Note, Color>();
+    private Dictionary<Note, AudioClip> soundMap = new Dictionary<Note, AudioClip>();
+
+
+    public ParticleSystem particleSystem; // Particle system for visual effects
+
+    void Start()
+    {
+        // Populate the color map for efficient lookup
+        foreach (var nc in noteColors)
+        {
+            colorMap[nc.note] = nc.color;
+            soundMap[nc.note] = nc.sound;
+        }
+
+        if (particleSystem == null)
+        {
+            particleSystem = GetComponent<ParticleSystem>();
+            if (particleSystem == null)
+            {
+                Debug.LogError("No Particle System found on this GameObject!");
+            }
+        }
+    }
+
+    public void ActivatePower(Note note)
+    {
+        if (colorMap.ContainsKey(note))
+        {
+            Color color = colorMap[note];
+            AudioClip sound = soundMap[note];
+
+            // Apply color change to something (e.g., a light, material, etc.)
+            // Example using a light:
+            Light lightComponent = GetComponent<Light>();
+            if (lightComponent != null)
+            {
+                lightComponent.color = color;
+            }
+            else
+            {
+                Renderer renderer = GetComponent<Renderer>();
+                if (renderer != null)
+                {
+                    renderer.material.color = color;
+                }
+            }
+            //Play sound
+            if(sound != null)
+            {
+                AudioSource.PlayClipAtPoint(sound, transform.position);
+            }
+            // Particle system effect
+            if (particleSystem != null)
+            {
+                var mainModule = particleSystem.main;
+                mainModule.startColor = color;
+                particleSystem.Emit(20); // Emit some particles
+            }
+            Debug.Log("Activated " + note + " power with color " + color);
+        }
+        else
+        {
+            Debug.LogWarning("No color defined for note: " + note);
+        }
+    }
+}
